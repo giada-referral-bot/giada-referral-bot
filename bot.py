@@ -188,7 +188,6 @@ async def run_bot_async():
     application = (
     Application.builder()
     .token(BOT_TOKEN)
-    .bootstrap_retries(-1)
     .connect_timeout(30)
     .read_timeout(30)
     .write_timeout(30)
