@@ -1,6 +1,7 @@
 import os
 import sqlite3
 import threading
+import asyncio
 from flask import Flask
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
@@ -183,13 +184,22 @@ async def channel_member(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def error_handler(update, context):
     print("Bot error:", context.error)
 
-def run_bot():
+async def run_bot_async():
     application = Application.builder().token(BOT_TOKEN).build()
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CallbackQueryHandler(verify, pattern="^verify$"))
     application.add_handler(ChatMemberHandler(channel_member, ChatMemberHandler.CHAT_MEMBER))
     application.add_error_handler(error_handler)
-    application.run_polling(allowed_updates=Update.ALL_TYPES)
+
+    await application.initialize()
+    await application.start()
+    await application.updater.start_polling(allowed_updates=Update.ALL_TYPES)
+
+    await asyncio.Event().wait()
+
+
+def run_bot():
+    asyncio.run(run_bot_async())
 
 @app.get("/")
 def health():
